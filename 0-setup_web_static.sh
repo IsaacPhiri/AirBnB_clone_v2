@@ -1,36 +1,30 @@
 #!/usr/bin/env bash
-# script that sets up your web servers for the deployment of web_static.
+# Write a Bash script that sets up your web servers for the deployment of web_static
+ 
+#install nginx
+#sudo apt purge nginx nginx-common nginx-core -y
+#sudo apt remove nginx nginx-common nginx-core -y
+#sudo apt autoremove -y
 
-# Update and Install nginx
-echo "Beginning installation of nginx"
-if ! which nginx > /dev/null 2>&1; then
-	echo "Nginx is not installed"
-else
-	echo "Updating"
-	sudo apt update -y
-	echo "Installing nginx"
-	sudo apt install nginx -y
-fi
-
-# Create directories
-if [[ ! -e /data/web_static/releases/ ]]; then
-	sudo mkdir -p /data/web_static/releases/test
-	sudo mkdir -p /data/web_static/shared/
-fi
-
-# Create a fake HTML file
-sudo echo "<h1>Welcome, this is {$hostname} Server</h1>" > /data/web_static/releases/test/index.html
-
-# Create a symbolic link
+sudo apt-get update -y
+sudo apt-get install nginx -y
+ 
+#create neccessary folders
+sudo mkdir -p '/data/web_static/shared/'
+sudo mkdir -p '/data/web_static/releases/test'
+sudo touch '/data/web_static/releases/test/index.html'
+ 
+# index.html message
+sudo echo "Welcome, this is $(hostname) server" |sudo tee /data/web_static/releases/test/index.html
+ 
+# creates symbolic link
 sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
-
-# Give ownership to ubuntu group
+ 
+# ownership
 sudo chown -hR ubuntu:ubuntu /data/
-
-# Update the Nginx configuration to serve the content of /data/web_static/current/ to hbnb_static
-replace="server_name _;"
-new="server_name tecsee.tech;\n\n\tlocation \/hbnb_static\/ \{\n\t\talias \/data\/web_static\/current\/;\n\t\}"
-sudo sed -i "s/$replace/$new/" /etc/nginx/sites-enabled/default
-
-# Restart nginx
+ 
+# configuration to serve the content
+sudo sed -i "59i\ \n\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n" /etc/nginx/sites-enabled/default
+ 
+# restart nginx server
 sudo service nginx restart
