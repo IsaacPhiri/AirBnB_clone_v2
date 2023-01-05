@@ -8,7 +8,7 @@ import os
 from fabric.api import *
 from fabric.operations import run, put
 
-
+env.use_ssh_config = True
 env.hosts = ['100.26.219.114', '35.175.129.54']
 env.user = 'ubuntu'
 
@@ -35,32 +35,31 @@ def do_deploy(archive_path):
 
         # Create a target dir without the file extension
         timestamp = time.strftime("%Y%m%d%H%M%S")
-        run(
-            'sudo mkdir -p /data/web_static/releases/web_static_{:s}/'.
+        run('mkdir -p /data/web_static/releases/web_static_{:s}/'.
             format(timestamp))
 
         # uncompress archive to the targed dir
-        run('sudo tar xzvf /tmp/web_static_{:s}.tgz --directory\
+        run('tar xzvf /tmp/web_static_{:s}.tgz --directory\
             /data/web_static/releases/web_static_{:s}/'.
             format(timestamp, timestamp))
 
         # delete the archive from the web server
-        run('sudo rm /tmp/web_static_{:s}.tgz'.format(timestamp))
+        run('rm /tmp/web_static_{:s}.tgz'.format(timestamp))
 
         # move contents into host web_static
-        run('sudo mv /data/web_static/releases/web_static_{:s}/web_static/*\
+        run('mv /data/web_static/releases/web_static_{:s}/web_static/*\
             /data/web_static/releases/web_static_{}/'.format(
             timestamp, timestamp))
 
         # remove irrelevant web_static dir
-        run('sudo rm -rf /data/web_static/releases/web_static_{}/web_static'.
+        run('rm -rf /data/web_static/releases/web_static_{}/web_static'.
             format(timestamp))
 
         # delete the initial symbolic link from the web server
-        run('sudo rm -rf /data/web_static/current')
+        run('rm -rf /data/web_static/current')
 
         # create a new symbolic link
-        run('sudo ln -s /data/web_static/releases/web_static_{:s}/ \
+        run('ln -s /data/web_static/releases/web_static_{:s}/ \
             /data/web_static/current'.format(
             timestamp))
     except BaseException:
